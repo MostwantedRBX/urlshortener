@@ -6,18 +6,20 @@ import (
 	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
+	log "github.com/rs/zerolog/log"
 )
 
 func StartDB() *sql.DB {
 	db, err := sql.Open("sqlite3", "./shortener.db")
 	if err != nil {
-		panic(err)
+		log.Logger.Fatal().Err(err)
 	}
 	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT PRIMARY KEY, url TEXT)")
 	if err != nil {
-		panic(err)
+		log.Logger.Fatal().Err(err)
 	}
 	statement.Exec()
+	log.Logger.Info().Caller().Msg("Database opened")
 	return db
 }
 
@@ -47,7 +49,6 @@ func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 	var url string
 	for rows.Next() {
 		rows.Scan(&key, &url)
-		fmt.Println("Key: " + key + "\nUrl: " + url)
 		if key == requestedKey {
 			return url, nil
 		}
