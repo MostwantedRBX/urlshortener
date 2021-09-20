@@ -23,12 +23,12 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprintln(w, url)
+	fmt.Fprintln(w, "<a href='http://localhost:8090/fetchurl?"+url+"'>http://localhost:8090/fetchurl?"+url+"</a>")
 }
 
 //	fires when the page /puturl is requested
 func putUrl(w http.ResponseWriter, req *http.Request) {
-	// just going to assume this key isnt the same as any other in the DB right now.
+	//	just going to assume this key isnt the same as any other in the DB right now.
 	key := genKey()
 	err := storage.InsertToDB(DB, key, req.URL.RawQuery)
 	if err != nil {
@@ -37,7 +37,8 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// Fprint() writes to the page
-	fmt.Fprintln(w, "http://localhost:8090/fetchurl?"+key)
+	fmt.Println("put")
+	fmt.Fprintln(w, "<a href='http://localhost:8090/fetchurl?"+key+"'>http://localhost:8090/fetchurl?"+key+"</a>")
 }
 
 //	function to generate the key for link
