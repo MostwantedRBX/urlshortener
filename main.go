@@ -61,7 +61,6 @@ func genKey() string {
 
 func main() {
 	rand.Seed(time.Now().Unix())
-	genKey()
 
 	//	what functions handle what requests
 	http.HandleFunc("/fetchurl", fetchUrl)
