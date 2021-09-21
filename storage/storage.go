@@ -10,7 +10,7 @@ import (
 
 func StartDB() *sql.DB {
 
-	// open/create(if it isnt made) the database
+	//	open/create(if it isnt made) the database
 	db, err := sql.Open("sqlite3", "./shortener.db")
 	if err != nil {
 		log.Logger.Fatal().Err(err)
@@ -21,7 +21,7 @@ func StartDB() *sql.DB {
 		log.Logger.Fatal().Err(err)
 	}
 
-	statement.Exec()
+	_, err = statement.Exec()
 	if err != nil {
 		log.Logger.Fatal().Err(err)
 	}
