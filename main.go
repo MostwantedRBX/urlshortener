@@ -17,12 +17,11 @@ import (
 
 //	declare strings of text/numbers to use for shortened link keys
 var (
-	ALPHA string  = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ"
-	NUM   string  = "0123456789"
-	DB    *sql.DB = storage.StartDB()
+	ALPHANUM string  = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789"
+	DB       *sql.DB = storage.StartDB()
 )
 
-//	fires when the page /fetchurl is requested
+//	fires when the page /links/{KEY} is requested
 func fetchUrl(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	url, err := storage.FetchFromDB(DB, vars["key"])
@@ -33,7 +32,7 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintln(w, `<head><meta http-equiv="refresh" content="0; url='`+url+`'" /></head>`) //(w, "<a href='"+url+"'>"+url+"</a>")
 }
 
-//	fires when the page /puturl is requested
+//	fires when the page /links is requested
 func putUrl(w http.ResponseWriter, req *http.Request) {
 	//	just going to assume this key isnt the same as any other in the DB right now.
 	key := genKey()
@@ -50,26 +49,23 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 
 //	function to generate the key for link
 func genKey() string {
-	//	length of key
 	var (
-		LENGTH int    = 5
-		key    string = ""
+		length  int        = 5
+		randGen *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 	)
 
-	//	I'd like to come up with a better randomizer
-	for i := 0; i < LENGTH; i++ {
-		if rand.Intn(2) == 1 {
-			key += string(ALPHA[rand.Intn(len(ALPHA))])
-			continue
-		}
-		key += string(NUM[rand.Intn(len(NUM))])
+	byteKey := make([]byte, length)
+	for i := range byteKey {
+		byteKey[i] = ALPHANUM[randGen.Intn(len(ALPHANUM))]
 	}
-	url, _ := storage.FetchFromDB(DB, key)
+	stringKey := string(byteKey)
+
+	url, _ := storage.FetchFromDB(DB, stringKey)
 	if url == "" {
 		//	if there isnt a url then we have a winner
-		return key
+		return stringKey
 	}
-	//	call recusively to try to get another unique key
+	//	call recusively to try to get another (hopefully unique) key
 	return genKey()
 }
 
