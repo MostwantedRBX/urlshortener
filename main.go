@@ -29,7 +29,8 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Logger.Err(err).Msg("could not fetch url from key provided")
 	}
-	fmt.Fprintln(w, "<a href='"+url+"'>"+url+"</a>")
+	fmt.Println(url)
+	fmt.Fprintln(w, `<head><meta http-equiv="refresh" content="0; url='`+url+`'" /></head>`) //(w, "<a href='"+url+"'>"+url+"</a>")
 }
 
 //	fires when the page /puturl is requested
@@ -63,7 +64,13 @@ func genKey() string {
 		}
 		key += string(NUM[rand.Intn(len(NUM))])
 	}
-	return key
+	url, _ := storage.FetchFromDB(DB, key)
+	if url == "" {
+		//	if there isnt a url then we have a winner
+		return key
+	}
+	//	call recusively to try to get another unique key
+	return genKey()
 }
 
 func main() {
@@ -75,8 +82,7 @@ func main() {
 	}
 	defer file.Close()
 
-	multi := io.MultiWriter(zerolog.ConsoleWriter{Out: os.Stderr}, file)
-	log.Logger = log.Output(multi)
+	log.Logger = log.Output(io.MultiWriter(zerolog.ConsoleWriter{Out: os.Stderr}, file))
 	log.Logger.Info().Msg("Logs started")
 
 	r := mux.NewRouter()
@@ -91,5 +97,5 @@ func main() {
 	}
 	log.Logger.Info().Msg("Starting server @localhost" + server.Addr)
 
-	log.Logger.Fatal().Err(server.ListenAndServe()).Msg("Server not failed to start")
+	log.Logger.Fatal().Err(server.ListenAndServe()).Msg("Server failed to run")
 }

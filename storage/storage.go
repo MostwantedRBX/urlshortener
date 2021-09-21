@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
-	log "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/log"
 )
 
 func StartDB() *sql.DB {
@@ -54,5 +54,5 @@ func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 		}
 	}
 
-	return "err", errors.New("could not key in DB")
+	return "", errors.New("could not key in DB")
 }
