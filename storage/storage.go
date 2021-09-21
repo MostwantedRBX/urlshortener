@@ -3,33 +3,42 @@ package storage
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/rs/zerolog/log"
 )
 
 func StartDB() *sql.DB {
+
+	// open/create(if it isnt made) the database
 	db, err := sql.Open("sqlite3", "./shortener.db")
 	if err != nil {
 		log.Logger.Fatal().Err(err)
 	}
+	//	creates the table to store urls with a string as the key
 	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT PRIMARY KEY, url TEXT)")
 	if err != nil {
 		log.Logger.Fatal().Err(err)
 	}
+
 	statement.Exec()
+	if err != nil {
+		log.Logger.Fatal().Err(err)
+	}
+
 	log.Logger.Info().Caller().Msg("Database opened")
 	return db
 }
 
 func InsertToDB(db *sql.DB, key string, url string) error {
+	log.Logger.Info().Msg("Attempting to insert the url/key combo into the db")
+
+	// 	insert a url with the key generated in the genKey() function in main.go
 	statement, err := db.Prepare("INSERT INTO links (key, url) VALUES (?, ?)")
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("inserting " + url + "with key of: " + key)
 	_, err = statement.Exec(key, url)
 	if err != nil {
 		return err
@@ -40,7 +49,9 @@ func InsertToDB(db *sql.DB, key string, url string) error {
 
 func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 
+	//	pull in everything from the database and scan it for the key, then pull the url that the key indicates.
 	rows, err := db.Query("SELECT key, url FROM links")
+
 	if err != nil {
 		return "", err
 	}
@@ -54,5 +65,6 @@ func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 		}
 	}
 
+	//	if there are no matches, return an error
 	return "", errors.New("could not key in DB")
 }
