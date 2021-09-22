@@ -10,9 +10,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/mostwantedrbx/urlshortener/storage"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	"github.com/mostwantedrbx/urlshortener/storage"
 )
 
 //	declare strings of text/numbers to use for shortened link keys
@@ -34,13 +35,13 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 	}
 
 	//	this makes it so the page refreshes with the new url from the DB
-	fmt.Fprintln(w, `<head><meta http-equiv="refresh" content="0; url='`+url+`'" /></head>`) //(w, "<a href='"+url+"'>"+url+"</a>")
+	fmt.Fprintln(w, `<head><meta http-equiv="refresh" content="0; url='`+url+`'" /></head>`)
 }
 
 //	fires when the page /links is requested
 func putUrl(w http.ResponseWriter, req *http.Request) {
 
-	//	just going to assume this key isnt the same as any other in the DB right now.
+	//	just going to assume this key isn't the same as any other in the DB right now.
 	key := genKey()
 	err := storage.InsertToDB(DB, key, req.URL.RawQuery)
 	if err != nil {
@@ -49,7 +50,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Fprint() writes to the page
+	//	Fprint() writes to the page
 	fmt.Fprintln(w, "<a href='http://localhost:8090/links/"+key+"'>http://localhost:8090/links/"+key+"</a>")
 	log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
 }
@@ -63,7 +64,7 @@ func genKey() string {
 		byteKey            = make([]byte, length)
 	)
 
-	//	create a random string of characters
+	//	create a random string of characters using random characters from the ALPHANUM charset declared at the top
 	for i := range byteKey {
 		byteKey[i] = ALPHANUM[randGen.Intn(len(ALPHANUM))]
 	}
@@ -71,7 +72,7 @@ func genKey() string {
 	stringKey := string(byteKey)
 
 	//	check if the string is in the database
-	//	if there isnt a url in the database then we have a winner
+	//	if there isn't a url in the database then we have a winner
 	url, _ := storage.FetchFromDB(DB, stringKey)
 	if url == "" {
 		return stringKey
