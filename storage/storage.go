@@ -61,10 +61,13 @@ func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 	for rows.Next() {
 		rows.Scan(&key, &url)
 		if key == requestedKey {
+			//	if we found a match, we close the rows
+			rows.Close()
 			return url, nil
 		}
 	}
 
-	//	if there are no matches, return an error
+	//	if there are no matches, close the rows and return an error
+	rows.Close()
 	return "", errors.New("could not key in DB")
 }

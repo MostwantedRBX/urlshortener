@@ -33,6 +33,8 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		log.Logger.Err(err).Msg("could not fetch url from key provided")
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
 	//	this makes it so the page refreshes with the new url from the DB
@@ -59,7 +61,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 	}
 
 	//	Fprint() writes to the page
-	fmt.Fprintln(w, "<a href='http://localhost:3000/links/"+key+"'>http://localhost:3000/links/"+key+"</a>")
+	fmt.Fprintln(w, "<a href='http://localhost:8080/links/"+key+"'>http://localhost:8080/links/"+key+"</a>")
 	log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
 }
 
@@ -106,14 +108,14 @@ func main() {
 	//	set up a router for our event handlers
 	r := mux.NewRouter()
 
-	r.Handle("/", http.FileServer(http.Dir("./static")))
+	r.Handle("/", http.FileServer(http.Dir("./static")))  //		serve /static/index.htm when localhost:8080/ is requested
 	r.HandleFunc("/links", putUrl).Methods("POST", "GET") //	when either /links or /links{key} gets requested, hand the data to a function
 	r.HandleFunc("/links/{key}", fetchUrl).Methods("GET") //	{key} is a variable that gets handed to the function fetchUrl()
 
 	//	server settings
 	server := &http.Server{
 		Handler:      r,
-		Addr:         ":3000",
+		Addr:         ":8080",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
