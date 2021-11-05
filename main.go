@@ -6,6 +6,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -43,7 +44,14 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 
 	//	just going to assume this key isn't the same as any other in the DB right now.
 	key := genKey()
-	err := storage.InsertToDB(DB, key, req.URL.RawQuery)
+	u, err := url.Parse(req.URL.String())
+	if err != nil {
+		log.Logger.Err(err).Msg("Could not parse URL")
+		return
+	}
+	q := u.Query().Get("url")
+
+	err = storage.InsertToDB(DB, key, q)
 	if err != nil {
 		log.Logger.Err(err).Msg("could not put url to key " + key)
 		fmt.Fprintln(w, "Failed, please try again")
@@ -51,7 +59,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 	}
 
 	//	Fprint() writes to the page
-	fmt.Fprintln(w, "<a href='http://localhost:8090/links/"+key+"'>http://localhost:8090/links/"+key+"</a>")
+	fmt.Fprintln(w, "<a href='http://localhost:3000/links/"+key+"'>http://localhost:3000/links/"+key+"</a>")
 	log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
 }
 
@@ -98,18 +106,19 @@ func main() {
 	//	set up a router for our event handlers
 	r := mux.NewRouter()
 
+	r.Handle("/", http.FileServer(http.Dir("./static")))
 	r.HandleFunc("/links", putUrl).Methods("POST", "GET") //	when either /links or /links{key} gets requested, hand the data to a function
 	r.HandleFunc("/links/{key}", fetchUrl).Methods("GET") //	{key} is a variable that gets handed to the function fetchUrl()
 
 	//	server settings
 	server := &http.Server{
 		Handler:      r,
-		Addr:         ":8090",
+		Addr:         ":3000",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Logger.Info().Msg("Starting server @localhost" + server.Addr)
-	//	listen @ localhost:8090 for a request
+	log.Logger.Info().Msg("Starting server @http://localhost" + server.Addr)
+	//	listen @ localhost:80 for a request
 	log.Logger.Fatal().Err(server.ListenAndServe()).Msg("Server failed to run")
 }
