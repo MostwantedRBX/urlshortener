@@ -1,3 +1,73 @@
 body {
-    background-color: powderblue;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+div {
+    max-width: 500px;
+	padding: 10px 20px;
+	background: #f4f7f8;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    vertical-align: middle;
+	padding: 20px;
+	background: #f4f7f8;
+	border-radius: 8px;
+	font-family: 'Sora', sans-serif;
+}
+
+.form-div fieldset{
+    border: none;
+}
+
+.form-div legend {
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.form-div label {
+    display: block;
+    margin-top: 8px;
+}
+
+.form-div input[type="text"] {
+	font-family: 'Sora', sans-serif;
+    font-size: 15px;
+	background: rgba(255,255,255,.1);
+	border: none;
+	border-radius: 15px;
+	margin: 0;
+	outline: 0;
+	padding: 10px;
+	width: 100%;
+	box-sizing: border-box;
+	background-color: #e8eeef;
+	color:#8a97a0;
+	box-shadow: 0 1px 0 rgba(0,0,0,0.03) inset;
+	margin-bottom: 30px;
+    text-align: center;
+}
+
+.form-div input[type="submit"] {
+    position: relative;
+	display: block;
+	padding: 15px 39px 14px 39px;
+	color: #FFF;
+	margin: 0 auto;
+	background: rgb(107, 151, 235);
+	font-size: 18px;
+	text-align: center;
+	font-style: normal;
+	width: 100%;
+	border: 1px solid rgb(77, 123, 207);
+	border-width: 1px 1px 3px;
+	border-radius: 15px;
+	margin-bottom: 10px;
+}
+
+.form-div input[type="submit"]:hover {
+    background: rgb(77, 123, 207);
+    border: 2px solid rgb(63, 99, 167);
 }

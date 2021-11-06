@@ -108,10 +108,11 @@ func main() {
 	//	set up a router for our event handlers
 	r := mux.NewRouter()
 
-	fs := http.FileServer(http.Dir("./static"))
-	r.Handle("/", fs)                                     //	serve /static/index.htm when localhost:8080/ is requested
+	fs := http.FileServer(http.Dir("./static/"))
+	r.Handle("/", fs).Methods("GET")                      //	serve /static/index.htm when localhost:8080/ is requested
 	r.HandleFunc("/links", putUrl).Methods("POST", "GET") //	when either /links or /links{key} gets requested, hand the data to a function
 	r.HandleFunc("/links/{key}", fetchUrl).Methods("GET") //	{key} is a variable that gets handed to the function fetchUrl()
+	r.PathPrefix("/").Handler(fs)
 
 	//	server settings
 	server := &http.Server{

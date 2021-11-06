@@ -4,14 +4,20 @@
         <meta charset="utf-8">
         <title>A static page</title>
         <link rel="stylesheet" href="main.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Sora&display=swap" rel="stylesheet">
     </head>
     <body>
-        <h1>Please enter URL below.</h1>
-        <form action="/links?">
-            <label for="url" >URL:</label>
-            <input type="text" id="url" name="url" value="https://www.google.com"><br><br>
-            <input type="submit" value="Submit">
-        </form>
-    </body>
+        <div class="form-div">
+            <form action="/links?">
+                <fieldset>
+                    <legend>URL Shortener</legend>
+                    <input type="text" name="url" placeholder="https://www.google.com/"><br>
+                    <input type="submit" value="Shorten URL">
+                </fieldset>
+            </form>
+        </div>
+    </body> 
 </html>
 <!-- super simple form --!>
