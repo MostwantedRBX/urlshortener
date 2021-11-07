@@ -69,5 +69,5 @@ func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 
 	//	if there are no matches, close the rows and return an error
 	rows.Close()
-	return "", errors.New("could not key in DB")
+	return "", errors.New("could not find key in DB")
 }
