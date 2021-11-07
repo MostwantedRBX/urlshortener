@@ -33,7 +33,6 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 	url, err := storage.FetchFromDB(DB, vars["key"])
 	log.Logger.Info().Msg(url)
 	if err != nil {
-		log.Logger.Err(err).Msg("could not fetch url from key provided")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -114,9 +113,11 @@ func main() {
 	r := mux.NewRouter()
 
 	fs := http.FileServer(http.Dir("./static/"))
-	r.Handle("/", fs)                                     //	serve /static/index.htm when localhost:8080/ is requested
-	r.HandleFunc("/links", putUrl).Methods("POST", "GET") //	when either /links or /links{key} gets requested, hand the data to a function
-	r.HandleFunc("/links/{key}", fetchUrl).Methods("GET") //	{key} is a variable that gets handed to the function fetchUrl()
+	//	serve /static/index.htm when localhost:8080/ is requested
+	r.Handle("/", fs)
+	r.HandleFunc("/links/put", putUrl).Methods("POST", "GET") //	when either /links or /links{key} gets requested, hand the data to a function
+	r.HandleFunc("/{key}", fetchUrl).Methods("GET")           //	{key} is a variable that gets handed to the function fetchUrl()
+
 	r.PathPrefix("/").Handler(fs)
 
 	//	server settings
@@ -127,7 +128,7 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 	}
 
-	log.Logger.Info().Msg("Starting server @ http://localhost" + server.Addr)
+	log.Logger.Info().Msg("Starting server @http://localhost" + server.Addr)
 	//	listen @ localhost:8080 for a request
 	log.Logger.Fatal().Err(server.ListenAndServe()).Msg("Server failed to run")
 }
