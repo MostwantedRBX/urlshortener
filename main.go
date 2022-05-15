@@ -30,9 +30,12 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 
 	//	vars is from the variable {keys} in the url /links/{key}
 	vars := mux.Vars(req)
+
 	url, err := storage.FetchFromDB(DB, vars["key"])
 	log.Logger.Info().Msg(url)
 	if err != nil {
+
+		log.Logger.Err(err).Msg("Could not get rows")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -65,7 +68,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 	}
 
 	//	Fprint() writes to the page
-	fmt.Fprintln(w, "<a href='http://localhost:8080/links/"+key+"'>http://localhost:8080/links/"+key+"</a>")
+	fmt.Fprintln(w, "<a href='http://localhost:8080/"+key+"'>http://localhost:8080/"+key+"</a>")
 	log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
 }
 
