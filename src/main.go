@@ -34,6 +34,10 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 
 	//	vars is from the variable {keys} in the url /links/{key}
 	vars := mux.Vars(req)
+	fmt.Println(vars["key"])
+	if vars["key"] == "" {
+		return
+	}
 
 	url, err := storage.FetchFromDB(DB, vars["key"])
 	log.Logger.Info().Msg(url)
@@ -79,6 +83,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 
 	jsonData.Url = "http://localhost:8080/" + key
 
+	fmt.Println(jsonData.Url)
 	if err := json.NewEncoder(w).Encode(&jsonData); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -104,7 +109,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 	// }
 
 	//	Fprint() writes to the page
-	fmt.Fprintln(w, "<a href='http://localhost:8080/"+key+"'>http://localhost:8080/"+key+"</a>")
+	// fmt.Fprintln(w, "<a href='http://localhost:8080/"+key+"'>http://localhost:8080/"+key+"</a>")
 	log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
 }
 
@@ -154,8 +159,8 @@ func main() {
 	fs := http.FileServer(http.Dir("./web/"))
 	//	serve /static/index.htm when localhost:8080/ is requested
 	r.Handle("/", fs)
-	r.HandleFunc("/links/put/", putUrl).Methods("POST", "OPTIONS") //	when either /links or /links{key} gets requested, hand the data to a function
-	r.HandleFunc("/{key}", fetchUrl).Methods("GET")                //	{key} is a variable that gets handed to the function fetchUrl()
+	r.HandleFunc("/put/", putUrl).Methods("POST")   //, "OPTIONS"	when either /links or /links{key} gets requested, hand the data to a function
+	r.HandleFunc("/{key}", fetchUrl).Methods("GET") //	{key} is a variable that gets handed to the function fetchUrl()
 
 	r.PathPrefix("/").Handler(fs)
 

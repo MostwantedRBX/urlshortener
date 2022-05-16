@@ -8,7 +8,7 @@ function App() {
   async function shortenUrl(url) {
     console.log(url.url)
     console.log("On shortenUrl")
-    const res = await fetch("http://localhost:8080/links/put/",{
+    const res = await fetch("http://localhost:8080/put/",{
       method:"POST",
       headers:{
         'Content-Type':"application/json",
@@ -17,6 +17,7 @@ function App() {
     }) 
 
     const data = await res.json()
+    console.log(data.url)
     setShortenedUrl(data.url)
   }
 
