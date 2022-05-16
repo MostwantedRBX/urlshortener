@@ -2,11 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -25,7 +25,11 @@ var (
 	DB       *sql.DB = storage.StartDB()
 )
 
-//	fires when the page /links/{key} is requested
+type UrlStruct struct {
+	Url string `json:"url"`
+}
+
+//	fires when the page /{key} is requested
 func fetchUrl(w http.ResponseWriter, req *http.Request) {
 
 	//	vars is from the variable {keys} in the url /links/{key}
@@ -46,26 +50,58 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 
 //	fires when the page /links is requested
 func putUrl(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
 
-	//	just going to assume this key isn't the same as any other in the DB right now.
 	key := genKey()
-	u, err := url.Parse(req.URL.String())
-	if err != nil {
-		log.Logger.Err(err).Msg("Could not parse URL")
-		return
-	}
-	q := u.Query().Get("url")
 
-	if !strings.Contains(q, "http") {
-		log.Logger.Debug().Msg("Adding http to " + q)
-		q = "http://" + q
-	}
-	err = storage.InsertToDB(DB, key, q)
-	if err != nil {
-		log.Logger.Err(err).Msg("could not put url to key " + key)
-		fmt.Fprintln(w, "Failed, please try again")
+	var jsonData UrlStruct
+	err := json.NewDecoder(req.Body).Decode(&jsonData)
+
+	if !(len(jsonData.Url) > 0) {
+		return
+	} else if err != nil {
+		log.Logger.Err(err).Caller().Msg("Could not decode json")
 		return
 	}
+
+	log.Logger.Info().Msg("data: " + jsonData.Url)
+
+	if !strings.Contains(jsonData.Url, "http") {
+		jsonData.Url = "http://" + jsonData.Url
+	}
+
+	if err := storage.InsertToDB(DB, key, jsonData.Url); err != nil {
+		log.Logger.Err(err).Msg("Could not insert url into db")
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	jsonData.Url = "http://localhost:8080/" + key
+
+	if err := json.NewEncoder(w).Encode(&jsonData); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// key := genKey()
+	// u, err := url.Parse(req.URL.String())
+	// if err != nil {
+	// 	log.Logger.Err(err).Msg("Could not parse URL")
+	// 	return
+	// }
+	// rawUrl := u.Query().Get("url")
+
+	// if !strings.Contains(rawUrl, "http") {
+	// 	log.Logger.Debug().Msg("Adding http to " + rawUrl)
+	// 	rawUrl = "http://" + rawUrl
+	// }
+	// err = storage.InsertToDB(DB, key, rawUrl)
+	// if err != nil {
+	// 	log.Logger.Err(err).Msg("could not put url to key " + key)
+	// 	fmt.Fprintln(w, "Failed, please try again")
+	// 	return
+	// }
 
 	//	Fprint() writes to the page
 	fmt.Fprintln(w, "<a href='http://localhost:8080/"+key+"'>http://localhost:8080/"+key+"</a>")
@@ -115,11 +151,11 @@ func main() {
 	//	set up a router for our event handlers
 	r := mux.NewRouter()
 
-	fs := http.FileServer(http.Dir("./static/"))
+	fs := http.FileServer(http.Dir("./web/"))
 	//	serve /static/index.htm when localhost:8080/ is requested
 	r.Handle("/", fs)
-	r.HandleFunc("/links/put", putUrl).Methods("POST", "GET") //	when either /links or /links{key} gets requested, hand the data to a function
-	r.HandleFunc("/{key}", fetchUrl).Methods("GET")           //	{key} is a variable that gets handed to the function fetchUrl()
+	r.HandleFunc("/links/put/", putUrl).Methods("POST", "OPTIONS") //	when either /links or /links{key} gets requested, hand the data to a function
+	r.HandleFunc("/{key}", fetchUrl).Methods("GET")                //	{key} is a variable that gets handed to the function fetchUrl()
 
 	r.PathPrefix("/").Handler(fs)
 
