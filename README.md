@@ -3,11 +3,12 @@
 This URL Shortener was a dip into the water from the ocean that is databases, http requests and ReactJS. This is likely my final touch on it.
 
 - Some highlights are:
-    - Getting to use databases(Sqlite3)
+    - Learning to migrate a previous(Sqlite3) database to a Postgres database.
+    - Learning how to securely send database cridentials to the server.
     - Http requests and learning what all the methods like get, put, post, etc do.
-    - Building a web server capable of serving web pages with the relevant css and JS.
+    - Building a web server capable of serving web pages with the relevant CSS and JS.
     - Building the frontend with ReactJS
-    - I got the chance to play around with a linux based server and deploy this program on it @ http://159.89.182.149/
+
 
 ![](https://raw.githubusercontent.com/MostwantedRBX/MostwantedRBX/master/pics/urlshortener.png)
 
