@@ -18,9 +18,15 @@ import (
 	"github.com/mostwantedrbx/urlshortener/storage"
 )
 
-//	declare strings of text/numbers to use for shortened link keys
-//	also, start the database and keep a pointer to it to pass around
+//	Docker info {
+//	Download the postgres image for the database and run it with: 'docker run -e POSTGRES_PASSWORD=dbpasswordhere postgres:latest'
+//	Build command: 'docker build --tag urlshortener:latest .'
+//	Run command: 'docker run -e PG_PASS=dbpasswordhere -e PG_HOST=dbIPhere -e PG_PORT=5432 --name nameofcontainer -p 8080:8080 -d urlshortener:latest'
+//	}
+
 var (
+	//	Declare strings of text/numbers to use for shortened link keys
+	//	Also, start the database and keep a pointer to it to pass around
 	ALPHANUM string  = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789"
 	DB       *sql.DB = storage.StartDB()
 )
@@ -29,10 +35,10 @@ type UrlStruct struct {
 	Url string `json:"url"`
 }
 
-//	fires when the page /{key} is requested
+//	Fires when the page /{key} is requested
 func fetchUrl(w http.ResponseWriter, req *http.Request) {
 
-	//	vars is from the variable {keys} in the url /links/{key}
+	//	Vars is from the variable {keys} in the url /links/{key}
 	vars := mux.Vars(req)
 	fmt.Println(vars["key"])
 	if vars["key"] == "" {
@@ -48,11 +54,11 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//	this makes it so the page refreshes with the new url from the DB
+	//	This makes it so the page refreshes with the new url from the DB
 	fmt.Fprintln(w, `<head><meta http-equiv="refresh" content="0; url='`+url+`'" /></head>`)
 }
 
-//	fires when the page /links is requested
+//	Fires when the page /links is requested
 func putUrl(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
@@ -113,7 +119,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 	log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
 }
 
-//	function to generate the key for link
+//	Function to generate the key for link
 func genKey() string {
 
 	var (
@@ -122,28 +128,28 @@ func genKey() string {
 		byteKey            = make([]byte, length)
 	)
 
-	//	create a random string of characters using random characters from the ALPHANUM charset declared at the top
+	//	Create a random string of characters using random characters from the ALPHANUM charset declared at the top
 	for i := range byteKey {
 		byteKey[i] = ALPHANUM[randGen.Intn(len(ALPHANUM))]
 	}
-	//	convert it from a byte to a string
+	//	Convert it from a byte to a string
 	stringKey := string(byteKey)
 
-	//	check if the string is in the database
-	//	if there isn't a url in the database then we have a winner
+	//	Check if the string is in the database
+	//	If there isn't a url in the database then we have a winner
 	url, _ := storage.FetchFromDB(DB, stringKey)
 	if url == "" {
 		return stringKey
 	}
 
-	//	if we did not find a url linked to a key, call
+	//	If we did not find a url linked to a key, call
 	//	recursively to try to get another (hopefully unique) key
 	return genKey()
 }
 
 func main() {
 
-	//	log setup
+	//	Log setup
 	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.FileMode(0666))
 	if err != nil {
 		panic(err)
@@ -153,18 +159,18 @@ func main() {
 	log.Logger = log.Output(io.MultiWriter(zerolog.ConsoleWriter{Out: os.Stderr}, file))
 	log.Logger.Info().Msg("Logs started")
 
-	//	set up a router for our event handlers
+	//	Set up a router for our event handlers
 	r := mux.NewRouter()
 
 	fs := http.FileServer(http.Dir("./web/"))
-	//	serve /static/index.htm when localhost:8080/ is requested
+	//	Serve /web/index.htm when localhost:8080/ is requested
 	r.Handle("/", fs)
 	r.HandleFunc("/put/", putUrl).Methods("POST")   //, "OPTIONS"	when either /links or /links{key} gets requested, hand the data to a function
 	r.HandleFunc("/{key}", fetchUrl).Methods("GET") //	{key} is a variable that gets handed to the function fetchUrl()
 
 	r.PathPrefix("/").Handler(fs)
 
-	//	server settings
+	//	Server settings
 	server := &http.Server{
 		Handler:      r,
 		Addr:         ":8080",
@@ -173,6 +179,6 @@ func main() {
 	}
 
 	log.Logger.Info().Msg("Starting server @http://localhost" + server.Addr)
-	//	listen @ localhost:8080 for a request
+	//	Listen @ localhost:8080 for a request
 	log.Logger.Fatal().Err(server.ListenAndServe()).Msg("Server failed to run")
 }

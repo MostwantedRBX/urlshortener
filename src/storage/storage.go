@@ -5,28 +5,45 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
 var (
-	pgPass = os.Getenv("PG_PASS")
-	pgPort = 5432 //	TODO: move to env var
+	//	Connection data is retrieved from enviroment variables
+	pgHost    = os.Getenv("PG_HOST")
+	pgPass    = os.Getenv("PG_PASS")
+	pgPort, _ = strconv.Atoi(os.Getenv("PG_PORT"))
 )
 
 func StartDB() *sql.DB {
-	db, err := sql.Open("postgres", fmt.Sprintf("host= localhost port= %d user= postgres password= %s dbname= urlshortener sslmode= disable", pgPort, pgPass))
-	if err != nil {
-		log.Logger.Fatal().Err(err)
-	}
-	//	creates the table to store urls with a string as the key
-	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT, url varchar(250), PRIMARY KEY (key))")
+	//	Open initial connection to database
+	db, err := sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= postgres sslmode= disable", pgHost, pgPort, pgPass))
 	if err != nil {
 		log.Logger.Fatal().Err(err).Msg("")
 	}
 
-	f, err := statement.Exec() //	Line 33
+	//	Creates the table to store urls with a string as the key
+	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT, url varchar(250), PRIMARY KEY (key))")
+
+	//	TODO: Figure out a more elegant way to handle failures to connect to DB
+	count := 0
+	for err != nil {
+		log.Logger.Warn().Err(err)
+		db, _ = sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= postgres sslmode= disable", pgHost, pgPort, pgPass))
+		statement, err = db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT, url varchar(250), PRIMARY KEY (key))")
+
+		count++
+		time.Sleep(5 * time.Second)
+		if count > 5 {
+			panic("Could not connect to db")
+		}
+	}
+
+	f, err := statement.Exec()
 	fmt.Println(f)
 	if err != nil {
 		log.Logger.Fatal().Err(err).Msg("")
@@ -39,7 +56,7 @@ func StartDB() *sql.DB {
 func InsertToDB(db *sql.DB, key string, url string) error {
 	log.Logger.Info().Msg("Attempting to insert the url/key combo into the db")
 
-	// 	insert a url with the key generated in the genKey() function in main.go
+	// 	Insert a url with the key generated in the genKey() function in main.go
 
 	statement, err := db.Prepare(`INSERT INTO links(key, url) VALUES ($1, $2);`)
 	if err != nil {
@@ -56,7 +73,7 @@ func InsertToDB(db *sql.DB, key string, url string) error {
 
 func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 
-	//	pull in everything from the database and scan it for the key, then pull the url that the key indicates.
+	//	Pull in everything from the database and scan it for the key, then pull the url that the key indicates.
 	rows, err := db.Query("SELECT key, url FROM links;")
 
 	if err != nil {
@@ -69,13 +86,13 @@ func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 
 		rows.Scan(&key, &url)
 		if key == requestedKey {
-			//	if we found a match, we close the rows
+			//	If we found a match, we close the rows
 			rows.Close()
 			return url, nil
 		}
 	}
 
-	//	if there are no matches, close the rows and return an error
+	//	If there are no matches, close the rows and return an error
 	rows.Close()
 	return "", errors.New("could not find key in DB")
 }
