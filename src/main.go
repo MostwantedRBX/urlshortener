@@ -40,13 +40,13 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 
 	//	Vars is from the variable {keys} in the url /links/{key}
 	vars := mux.Vars(req)
-	fmt.Println(vars["key"])
+	// fmt.Println(vars["key"])
 	if vars["key"] == "" {
 		return
 	}
 
 	url, err := storage.FetchFromDB(DB, vars["key"])
-	log.Logger.Info().Msg(url)
+	// log.Logger.Info().Msg(url)
 	if err != nil {
 
 		log.Logger.Err(err).Msg("Could not get rows")
@@ -75,8 +75,6 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Logger.Info().Msg("data: " + jsonData.Url)
-
 	if !strings.Contains(jsonData.Url, "http") {
 		jsonData.Url = "http://" + jsonData.Url
 	}
@@ -89,34 +87,12 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 
 	jsonData.Url = "http://localhost:8080/" + key
 
-	fmt.Println(jsonData.Url)
 	if err := json.NewEncoder(w).Encode(&jsonData); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
-	// key := genKey()
-	// u, err := url.Parse(req.URL.String())
-	// if err != nil {
-	// 	log.Logger.Err(err).Msg("Could not parse URL")
-	// 	return
-	// }
-	// rawUrl := u.Query().Get("url")
-
-	// if !strings.Contains(rawUrl, "http") {
-	// 	log.Logger.Debug().Msg("Adding http to " + rawUrl)
-	// 	rawUrl = "http://" + rawUrl
-	// }
-	// err = storage.InsertToDB(DB, key, rawUrl)
-	// if err != nil {
-	// 	log.Logger.Err(err).Msg("could not put url to key " + key)
-	// 	fmt.Fprintln(w, "Failed, please try again")
-	// 	return
-	// }
-
-	//	Fprint() writes to the page
-	// fmt.Fprintln(w, "<a href='http://localhost:8080/"+key+"'>http://localhost:8080/"+key+"</a>")
-	log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
+	// log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
 }
 
 //	Function to generate the key for link
