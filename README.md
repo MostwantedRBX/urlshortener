@@ -24,7 +24,7 @@ This URL Shortener was a dip into the water from the ocean that is databases, ht
         - Use the command <code>go run main.go</code> to run the program, or build and run the binary
         - Go to localhost:8080 in your web browser
         - Input URL to be shortened and hit submit
-<br>
+
 - Usage on Docker:
     - Build the Docker image of the urlshortener with the following command: <code>docker build --tag urlshortener:latest .</code>
     - Run a container with postgres installed with the following command: <code>docker run -e POSTGRES_PASSWORD=dbpasswordhere postgres:latest</code>
