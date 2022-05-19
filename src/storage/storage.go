@@ -20,6 +20,9 @@ var (
 	pgDatabaseName = os.Getenv("PG_DATABASE_NAME")
 )
 
+//	StartDB opens the sql connection and creates a table named 'links' and two collumns
+//	in that table named 'key' and 'url' with 'key' being the primary key to the table.
+//	Returns an sql.DB object.
 func StartDB() *sql.DB {
 	//	Open initial connection to database
 	db, err := sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= %s sslmode= disable", pgHost, pgPort, pgPass, pgDatabaseName))
@@ -54,10 +57,10 @@ func StartDB() *sql.DB {
 	return db
 }
 
+//	InsertUrlIntoDB takes in a db, a key and a url to link to the key and inserts it into
+//	the database table named 'links' and into their respective collumns called 'key' and 'url'.
 func InsertUrlIntoDB(db *sql.DB, key string, url string) error {
 	log.Logger.Info().Msg("Attempting to insert the url/key combo into the db")
-
-	// 	Insert a url with the key generated in the genKey() function in main.go
 
 	statement, err := db.Prepare(`INSERT INTO links(key, url) VALUES ($1, $2);`)
 	if err != nil {
@@ -72,9 +75,9 @@ func InsertUrlIntoDB(db *sql.DB, key string, url string) error {
 	return nil
 }
 
-func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
-
-	//	Pull in everything from the database and scan it for the key, then pull the url that the key indicates.
+//	FetchFromDB takes an sql.DB and a string of the key you want the url for. Returns the url of the requested key.
+//	Returns and empty string alongside the error if it could not find the key in the database or otherwise errors.
+func FetchKeyUrlFromDB(db *sql.DB, requestedKey string) (string, error) {
 	rows, err := db.Query("select key, url from links where key=$1;", requestedKey)
 
 	if err != nil {
@@ -83,9 +86,12 @@ func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 
 	var key string
 	var url string
+	//	I can probably remove this loop now that I'm selecting a specific key from the table.
 	for rows.Next() {
-
-		rows.Scan(&key, &url)
+		err = rows.Scan(&key, &url)
+		if err != nil {
+			return "", err
+		}
 		if key == requestedKey {
 			//	If we found a match, we close the rows
 			rows.Close()

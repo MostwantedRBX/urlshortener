@@ -46,7 +46,7 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	url, err := storage.FetchFromDB(DB, vars["key"])
+	url, err := storage.FetchKeyUrlFromDB(DB, vars["key"])
 	// log.Logger.Info().Msg(url)
 	if err != nil {
 
@@ -59,7 +59,7 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 	http.Redirect(w, req, url, http.StatusMovedPermanently)
 }
 
-//	Fires when the page /links is requested
+//	Fires when the page /put/ is requested
 func putUrl(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
@@ -100,7 +100,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 	// log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
 }
 
-//	Function to generate the key for link
+//	Function to generate the key for the link
 func genKey() (string, error) {
 	var (
 		length  int = 5
@@ -120,7 +120,7 @@ func genKey() (string, error) {
 
 	//	Check if the string is in the database
 	//	If there isn't a url in the database then we have a winner
-	url, _ := storage.FetchFromDB(DB, stringKey)
+	url, _ := storage.FetchKeyUrlFromDB(DB, stringKey)
 	if url == "" {
 		return stringKey, nil
 	}
