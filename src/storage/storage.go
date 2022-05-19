@@ -54,7 +54,7 @@ func StartDB() *sql.DB {
 	return db
 }
 
-func InsertToDB(db *sql.DB, key string, url string) error {
+func InsertUrlIntoDB(db *sql.DB, key string, url string) error {
 	log.Logger.Info().Msg("Attempting to insert the url/key combo into the db")
 
 	// 	Insert a url with the key generated in the genKey() function in main.go
