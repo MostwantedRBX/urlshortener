@@ -34,7 +34,7 @@ func StartDB() *sql.DB {
 	count := 0
 	for err != nil {
 		log.Logger.Warn().Err(err)
-		db, _ = sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= urlshortener sslmode= disable", pgHost, pgPort, pgPass))
+		db, _ = sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= %s sslmode= disable", pgHost, pgPort, pgPass, pgDatabaseName))
 		statement, err = db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT, url varchar(250), PRIMARY KEY (key))")
 
 		count++
