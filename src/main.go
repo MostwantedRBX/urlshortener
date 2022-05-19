@@ -1,11 +1,11 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"io"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"os"
 	"strings"
@@ -21,7 +21,7 @@ import (
 //	Docker info {
 //	Download the postgres image for the database and run it with: 'docker run -e POSTGRES_PASSWORD=dbpasswordhere postgres:latest'
 //	Build command: 'docker build --tag urlshortener:latest .'
-//	Run command: 'docker run -e PG_PASS=dbpasswordhere -e PG_HOST=dbIPhere -e PG_PORT=5432 --name nameofcontainer -p 8080:8080 -d urlshortener:latest'
+//	Run command: 'docker run -e PG_PASS=dbpasswordhere -e PG_HOST=dbIPhere -e PG_PORT=5432 -e PG_DATABASE_NAME=dbnamehere --name nameofcontainer -p 8080:8080 -d urlshortener:latest'
 //	}
 
 var (
@@ -54,8 +54,8 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	//	This makes it so the page refreshes with the new url from the DB
-	fmt.Fprintln(w, `<head><meta http-equiv="refresh" content="0; url='`+url+`'" /></head>`)
+	//	This refreshes and redirects with the new url from the DB
+	http.Redirect(w, req, url, http.StatusMovedPermanently)
 }
 
 //	Fires when the page /links is requested
@@ -63,10 +63,14 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
 
-	key := genKey()
+	key, err := genKey()
+	if err != nil {
+		log.Logger.Err(err).Caller().Msg("Could not decode json")
+		return
+	}
 
 	var jsonData UrlStruct
-	err := json.NewDecoder(req.Body).Decode(&jsonData)
+	err = json.NewDecoder(req.Body).Decode(&jsonData)
 
 	if !(len(jsonData.Url) > 0) {
 		return
@@ -96,17 +100,19 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 }
 
 //	Function to generate the key for link
-func genKey() string {
-
+func genKey() (string, error) {
 	var (
-		length  int        = 5
-		randGen *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
-		byteKey            = make([]byte, length)
+		length  int = 5
+		byteKey     = make([]byte, length)
 	)
 
 	//	Create a random string of characters using random characters from the ALPHANUM charset declared at the top
 	for i := range byteKey {
-		byteKey[i] = ALPHANUM[randGen.Intn(len(ALPHANUM))]
+		randNum, err := rand.Int(rand.Reader, big.NewInt(int64(len(ALPHANUM))))
+		if err != nil {
+			return "", err
+		}
+		byteKey[i] = ALPHANUM[randNum.Int64()]
 	}
 	//	Convert it from a byte to a string
 	stringKey := string(byteKey)
@@ -115,11 +121,11 @@ func genKey() string {
 	//	If there isn't a url in the database then we have a winner
 	url, _ := storage.FetchFromDB(DB, stringKey)
 	if url == "" {
-		return stringKey
+		return stringKey, nil
 	}
 
-	//	If we did not find a url linked to a key, call
-	//	recursively to try to get another (hopefully unique) key
+	//	If the key generated is already in use, call recursively
+	//	to try to get another (hopefully unique) key
 	return genKey()
 }
 

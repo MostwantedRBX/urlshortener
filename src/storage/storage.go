@@ -14,14 +14,15 @@ import (
 
 var (
 	//	Connection data is retrieved from enviroment variables
-	pgHost    = os.Getenv("PG_HOST")
-	pgPass    = os.Getenv("PG_PASS")
-	pgPort, _ = strconv.Atoi(os.Getenv("PG_PORT"))
+	pgHost         = os.Getenv("PG_HOST")
+	pgPort, _      = strconv.Atoi(os.Getenv("PG_PORT"))
+	pgPass         = os.Getenv("PG_PASS")
+	pgDatabaseName = os.Getenv("PG_DATABASE_NAME")
 )
 
 func StartDB() *sql.DB {
 	//	Open initial connection to database
-	db, err := sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= postgres sslmode= disable", pgHost, pgPort, pgPass))
+	db, err := sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= %s sslmode= disable", pgHost, pgPort, pgPass, pgDatabaseName))
 	if err != nil {
 		log.Logger.Fatal().Err(err).Msg("")
 	}
@@ -33,7 +34,7 @@ func StartDB() *sql.DB {
 	count := 0
 	for err != nil {
 		log.Logger.Warn().Err(err)
-		db, _ = sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= postgres sslmode= disable", pgHost, pgPort, pgPass))
+		db, _ = sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= urlshortener sslmode= disable", pgHost, pgPort, pgPass))
 		statement, err = db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT, url varchar(250), PRIMARY KEY (key))")
 
 		count++
