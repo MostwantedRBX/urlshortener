@@ -75,7 +75,7 @@ func InsertToDB(db *sql.DB, key string, url string) error {
 func FetchFromDB(db *sql.DB, requestedKey string) (string, error) {
 
 	//	Pull in everything from the database and scan it for the key, then pull the url that the key indicates.
-	rows, err := db.Query("SELECT key, url FROM links;")
+	rows, err := db.Query("select key, url from links where key=$1;", requestedKey)
 
 	if err != nil {
 		return "", err
