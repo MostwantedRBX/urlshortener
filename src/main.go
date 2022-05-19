@@ -42,6 +42,7 @@ func fetchUrl(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	// fmt.Println(vars["key"])
 	if vars["key"] == "" {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -83,7 +84,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 		jsonData.Url = "http://" + jsonData.Url
 	}
 
-	if err := storage.InsertToDB(DB, key, jsonData.Url); err != nil {
+	if err := storage.InsertUrlIntoDB(DB, key, jsonData.Url); err != nil {
 		log.Logger.Err(err).Msg("Could not insert url into db")
 		http.Error(w, err.Error(), 500)
 		return
