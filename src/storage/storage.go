@@ -76,12 +76,12 @@ func InsertUrlIntoDB(db *sql.DB, key string, url string) error {
 }
 
 //	FetchFromDB takes an sql.DB and a string of the key you want the url for. Returns the url of the requested key.
-//	Returns and empty string alongside the error if it could not find the key in the database or otherwise errors.
+//	Returns 'nil' in a string alongside the error if it could not find the key in the database or otherwise errors.
 func FetchKeyUrlFromDB(db *sql.DB, requestedKey string) (string, error) {
 	rows, err := db.Query("select key, url from links where key=$1;", requestedKey)
 
 	if err != nil {
-		return "", err
+		return "err", err
 	}
 
 	var key string
@@ -90,7 +90,7 @@ func FetchKeyUrlFromDB(db *sql.DB, requestedKey string) (string, error) {
 	for rows.Next() {
 		err = rows.Scan(&key, &url)
 		if err != nil {
-			return "", err
+			return "err", err
 		}
 		if key == requestedKey {
 			//	If we found a match, we close the rows
@@ -101,5 +101,5 @@ func FetchKeyUrlFromDB(db *sql.DB, requestedKey string) (string, error) {
 
 	//	If there are no matches, close the rows and return an error
 	rows.Close()
-	return "", errors.New("could not find key in DB")
+	return "nil", errors.New("could not find key in DB")
 }

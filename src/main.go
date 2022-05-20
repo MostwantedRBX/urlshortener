@@ -121,7 +121,7 @@ func genKey() (string, error) {
 	//	Check if the string is in the database
 	//	If there isn't a url in the database then we have a winner
 	url, _ := storage.FetchKeyUrlFromDB(DB, stringKey)
-	if url == "" {
+	if url == "nil" {
 		return stringKey, nil
 	}
 
