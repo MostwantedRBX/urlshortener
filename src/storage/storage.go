@@ -20,6 +20,24 @@ var (
 	pgDatabaseName = os.Getenv("PG_DATABASE_NAME")
 )
 
+//	Creates the table to store urls with a string as the key if it doesn't exist.
+func initializeDB(db *sql.DB) error {
+
+	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT, url varchar(250), PRIMARY KEY (key))")
+	if err != nil {
+		log.Logger.Fatal().Err(err).Msg("")
+		return err
+	}
+
+	_, err = statement.Exec()
+	if err != nil {
+		log.Logger.Fatal().Err(err).Msg("")
+		return err
+	}
+
+	return nil
+}
+
 //	StartDB opens the sql connection and creates a table named 'links' and two collumns
 //	in that table named 'key' and 'url' with 'key' being the primary key to the table.
 //	Returns an sql.DB object.
@@ -30,15 +48,11 @@ func StartDB() *sql.DB {
 		log.Logger.Fatal().Err(err).Msg("")
 	}
 
-	//	Creates the table to store urls with a string as the key
-	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT, url varchar(250), PRIMARY KEY (key))")
-
 	//	TODO: Figure out a more elegant way to handle failures to connect to DB
 	count := 0
 	for err != nil {
-		log.Logger.Warn().Err(err)
-		db, _ = sql.Open("postgres", fmt.Sprintf("host= %s port= %d user= postgres password= %s dbname= %s sslmode= disable", pgHost, pgPort, pgPass, pgDatabaseName))
-		statement, err = db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT, url varchar(250), PRIMARY KEY (key))")
+
+		err = initializeDB(db)
 
 		count++
 		time.Sleep(5 * time.Second)
@@ -47,13 +61,7 @@ func StartDB() *sql.DB {
 		}
 	}
 
-	f, err := statement.Exec()
-	fmt.Println(f)
-	if err != nil {
-		log.Logger.Fatal().Err(err).Msg("")
-	}
-
-	log.Logger.Info().Caller().Msg("Database opened")
+	log.Logger.Info().Caller().Msg("Database opened and initialized")
 	return db
 }
 
