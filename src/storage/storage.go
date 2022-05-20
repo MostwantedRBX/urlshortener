@@ -47,18 +47,16 @@ func StartDB() *sql.DB {
 	if err != nil {
 		log.Logger.Fatal().Err(err).Msg("")
 	}
+	err = initializeDB(db)
 
-	//	TODO: Figure out a more elegant way to handle failures to connect to DB
 	count := 0
 	for err != nil {
-
 		err = initializeDB(db)
-
 		count++
-		time.Sleep(5 * time.Second)
 		if count > 5 {
 			panic("Could not connect to db")
 		}
+		time.Sleep(5 * time.Second)
 	}
 
 	log.Logger.Info().Caller().Msg("Database opened and initialized")
