@@ -90,7 +90,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	jsonData.Url = "http://localhost:8080/" + key
+	jsonData.Url = "http://167.172.240.248:8080/" + key
 
 	if err := json.NewEncoder(w).Encode(&jsonData); err != nil {
 		http.Error(w, err.Error(), 500)
