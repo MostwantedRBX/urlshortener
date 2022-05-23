@@ -2,3 +2,7 @@
 .vscode/
 .git
 *.md
+.web-src/
+bombardier.json
+urlshortener
+logs.txt
