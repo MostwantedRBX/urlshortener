@@ -90,7 +90,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	jsonData.Url = "http://167.172.240.248:8080/" + key
+	jsonData.Url = "srtlink.net/" + key
 
 	if err := json.NewEncoder(w).Encode(&jsonData); err != nil {
 		http.Error(w, err.Error(), 500)
@@ -156,7 +156,7 @@ func main() {
 	//	Server settings
 	server := &http.Server{
 		Handler:      r,
-		Addr:         ":8080",
+		Addr:         ":80",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
