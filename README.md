@@ -1,18 +1,20 @@
 ## mostwantedrbx's urlshortener
+## http://srtlink.net/
 
 This URL Shortener was a dip into the water from the ocean that is databases, http requests, Docker and ReactJS.
 
-- Some highlights are:
-    - Learning how postgres database(and sql in general) works.
+- Some of my learning highlights are:
+    - Learning how postgres databases(and sql in general) works.
     - Learning how to securely send database credentials to the server.
     - Http requests and learning all the methods like get, put, post, etc.
-    - Building a web server capable of serving web pages and REST API requests.
+    - Building a web server capable of serving a react app and REST API requests.
     - Building the frontend with ReactJS.
     - Building images and deploying the program with Docker.
     - Using CI/CD to automatically build and push Docker images.
+    
 
 
-![](https://raw.githubusercontent.com/MostwantedRBX/MostwantedRBX/master/pics/urlshortener.png)
+![](screenshots/linkshortener.jpg)
 
 - Usage on local machine:
     - Prerequisites:
@@ -29,5 +31,5 @@ This URL Shortener was a dip into the water from the ocean that is databases, ht
 - Usage on Docker:
     - Build the Docker image of the urlshortener with the following command: <code>docker build --tag urlshortener:latest .</code>
     - Run a container with postgres installed with the following command: <code>docker run -e POSTGRES_PASSWORD=dbpasswordhere postgres:latest</code>
-    - Run a container with the urlshortener with the following command: <code>docker run -e PG_PASS=dbpasswordhere -e PG_HOST=dbIPhere -e PG_PORT=5432 --name nameofcontainer -p 8080:8080 -d urlshortener:latest</code>
+    - Run a container with the urlshortener with the following command: <code>docker run -e PG_PASS=dbpasswordhere -e PG_HOST=dbIPhere -e PG_PORT=5432 --name nameofcontainer -p 80:80 -d urlshortener:latest</code>
         - Note: If you are running the the db on the same machine via docker you need to run the command <code>docker network inspect bridge</code> and use the ip for the postgres container shown in the field 'dbIPhere' in the command.
