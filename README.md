@@ -9,6 +9,7 @@ This URL Shortener was a dip into the water from the ocean that is databases, ht
     - Building a web server capable of serving web pages and REST API requests.
     - Building the frontend with ReactJS.
     - Building images and deploying the program with Docker.
+    - Using CI/CD to automatically build and push Docker images.
 
 
 ![](https://raw.githubusercontent.com/MostwantedRBX/MostwantedRBX/master/pics/urlshortener.png)
