@@ -1,12 +1,11 @@
-## mostwantedrbx's urlshortener
-## http://srtlink.net/
+## mostwantedrbx's urlshortener - http://srtlink.net/
 
-This URL Shortener was a dip into the water from the ocean that is databases, http requests, Docker and ReactJS.
+This URL Shortener was a dip into the water that is the ocean of databases, HTTP requests, Docker and ReactJS.
 
 - Some of my learning highlights are:
     - Learning how postgres databases(and sql in general) works.
     - Learning how to securely send database credentials to the server.
-    - Http requests and learning all the methods like get, put, post, etc.
+    - HTTP requests and learning all the methods like get, put, post, etc.
     - Building a web server capable of serving a react app and REST API requests.
     - Building the frontend with ReactJS.
     - Building images and deploying the program with Docker.
