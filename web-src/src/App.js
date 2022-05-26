@@ -17,6 +17,13 @@ function App() {
     const data = await res.json()
     setShortenedUrl(data.url)
   }
+  
+  function copyButton() {
+    
+    navigator.clipboard.writeText(shortenedUrl);
+    
+    alert("Copied " + shortenedUrl + " to clipboard.")
+  }
 
   return (
     <div className="container">
@@ -24,8 +31,10 @@ function App() {
       {console.log("Rendered")}
       <Input onShorten={shortenUrl} />
       <p className="urlP">
-        {shortenedUrl ? shortenedUrl:""}
+        {shortenedUrl ? shortenedUrl:"Shorten a link!"}
       </p>
+      
+      {shortenedUrl ? <button className="btn btn-block" onClick={copyButton}>Copy to Clipboard</button>:null}
     </div>
   );
 }

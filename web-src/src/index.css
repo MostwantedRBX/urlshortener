@@ -48,7 +48,7 @@ h2 {
 
 .btn {
   display: inline-block;
-  border: none;
+  border:0px;
   padding: 10px 20px;
   margin: 5px;
   color:#181818;
@@ -61,7 +61,10 @@ h2 {
 }
 
 .btn:hover, .btn:focus{
-  background: rgba(255, 255, 255, 0.781)
+  background: rgba(124, 246, 255, 0.74);
+  color: #fff;
+  border: 10px;
+  /* background: rgba(255, 255, 255, 0.781) */
 }
 
 .btn-block {
