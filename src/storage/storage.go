@@ -22,6 +22,8 @@ var (
 
 //	Creates the table to store urls with a string as the key if it doesn't exist.
 func initializeDB(db *sql.DB) error {
+	db.SetMaxOpenConns(200)
+	db.SetMaxIdleConns(50)
 
 	statement, err := db.Prepare("CREATE TABLE IF NOT EXISTS links (key TEXT, url varchar(250), PRIMARY KEY (key))")
 	if err != nil {
