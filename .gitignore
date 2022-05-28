@@ -4,3 +4,5 @@ logs.txt
 urlshortener
 .vscode/launch.json
 bombardier.json
+src/server.key
+src/server.crt

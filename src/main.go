@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/mostwantedrbx/urlshortener/storage"
 )
@@ -29,6 +30,7 @@ var (
 	//	Also, start the database and keep a pointer to it to pass around
 	ALPHANUM string  = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789"
 	DB       *sql.DB = storage.StartDB()
+	PROD     bool    = os.Getenv("PROD") == "true"
 )
 
 type UrlStruct struct {
@@ -154,14 +156,28 @@ func main() {
 	r.PathPrefix("/").Handler(fs)
 
 	//	Server settings
+	m := &autocert.Manager{
+		Cache:      autocert.DirCache("./"),
+		Prompt:     autocert.AcceptTOS,
+		Email:      "mostwantedrbxsteam@gmail.com",
+		HostPolicy: autocert.HostWhitelist("srtlink.net"),
+	}
+
 	server := &http.Server{
 		Handler:      r,
 		Addr:         ":80",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
+		TLSConfig:    m.TLSConfig(),
 	}
 
-	log.Logger.Info().Msg("Starting server @http://localhost" + server.Addr)
 	//	Listen @ localhost:8080 for a request
-	log.Logger.Fatal().Err(server.ListenAndServe()).Msg("Server failed to run")
+	if PROD {
+		log.Logger.Info().Msg("Starting server @http://localhost" + server.Addr)
+		log.Logger.Fatal().Err(server.ListenAndServeTLS("", "")).Msg("Server failed to run")
+	} else {
+		server.Addr = ":8080"
+		log.Logger.Info().Msg("Starting server @http://localhost" + server.Addr)
+		log.Logger.Fatal().Err(server.ListenAndServe()).Msg("Server failed to run")
+	}
 }
