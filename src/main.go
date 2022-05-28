@@ -160,7 +160,7 @@ func main() {
 		Cache:      autocert.DirCache("./"),
 		Prompt:     autocert.AcceptTOS,
 		Email:      "mostwantedrbxsteam@gmail.com",
-		HostPolicy: autocert.HostWhitelist("srtlink.net"),
+		HostPolicy: autocert.HostWhitelist("www.srtlink.net"),
 	}
 
 	server := &http.Server{
