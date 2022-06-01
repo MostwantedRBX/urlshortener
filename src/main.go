@@ -165,22 +165,21 @@ func main() {
 
 	server := &http.Server{
 		Handler:      r,
-		Addr:         ":80",
+		Addr:         ":8080",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
-	//	Listen @ localhost:8080 for a request
+	//	Listen @ localhost:80 for a request
+	log.Logger.Info().Msg("Starting server @localhost" + server.Addr)
 	if PROD {
+		server.Addr = ":443"
 		server.TLSConfig = m.TLSConfig()
-		log.Logger.Info().Msg("Starting server @localhost" + server.Addr)
 		go func() {
 			log.Logger.Fatal().Err(http.ListenAndServe(":http", m.HTTPHandler(nil))).Msg("Server failed to run")
 		}()
 		log.Logger.Fatal().Err(server.ListenAndServeTLS("", "")).Msg("Server failed to run")
 	} else {
-		server.Addr = ":8080"
-		log.Logger.Info().Msg("Starting server @http://localhost" + server.Addr)
 		log.Logger.Fatal().Err(server.ListenAndServe()).Msg("Server failed to run")
 	}
 }
