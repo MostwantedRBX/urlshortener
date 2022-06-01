@@ -157,10 +157,10 @@ func main() {
 
 	//	Server settings
 	m := &autocert.Manager{
-		Cache:      autocert.DirCache("./"),
+		Cache:      autocert.DirCache("/root/secrets"),
 		Prompt:     autocert.AcceptTOS,
 		Email:      "mostwantedrbxsteam@gmail.com",
-		HostPolicy: autocert.HostWhitelist("www.srtlink.net"),
+		HostPolicy: autocert.HostWhitelist("srtlink.net"),
 	}
 
 	server := &http.Server{
@@ -168,12 +168,15 @@ func main() {
 		Addr:         ":80",
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
-		TLSConfig:    m.TLSConfig(),
 	}
 
 	//	Listen @ localhost:8080 for a request
 	if PROD {
-		log.Logger.Info().Msg("Starting server @http://localhost" + server.Addr)
+		server.TLSConfig = m.TLSConfig()
+		log.Logger.Info().Msg("Starting server @localhost" + server.Addr)
+		go func() {
+			log.Logger.Fatal().Err(http.ListenAndServe(":http", m.HTTPHandler(nil))).Msg("Server failed to run")
+		}()
 		log.Logger.Fatal().Err(server.ListenAndServeTLS("", "")).Msg("Server failed to run")
 	} else {
 		server.Addr = ":8080"
