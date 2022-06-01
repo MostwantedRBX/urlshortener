@@ -6,7 +6,7 @@ function App() {
   const [shortenedUrl,setShortenedUrl] = useState("")
 
   async function shortenUrl(url) {
-    const res = await fetch("http://srtlink.net/put/",{
+    const res = await fetch("https://srtlink.net/put/",{
       method:"POST",
       headers:{
         'Content-Type':"application/json",
