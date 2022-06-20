@@ -37,8 +37,8 @@ function App() {
       
       {shortenedUrl ? <button className="btn btn-block" onClick={copyButton}>Copy to Clipboard</button>:null}
       {shortenedUrl ? <button className="btn btn-block" onClick={async () => { 
+        await fetch("https://srtlink.net/qr/",{ // Prod
         // await fetch("http://localhost:8080/qr/",{ // Testing
-          await fetch("https://srtlink.net//qr/",{ // Prod
           method:"POST",
           headers:{
             'Content-Type':"application/json",
