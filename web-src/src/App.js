@@ -6,7 +6,8 @@ function App() {
   const [shortenedUrl,setShortenedUrl] = useState("")
 
   async function shortenUrl(url) {
-    const res = await fetch("https://srtlink.net/put/",{
+    const res = await fetch("https://srtlink.net/put/",{ // Prod
+      // const res = await fetch("http://localhost:8080/put/",{ // Testing  
       method:"POST",
       headers:{
         'Content-Type':"application/json",
@@ -35,6 +36,26 @@ function App() {
       </p>
       
       {shortenedUrl ? <button className="btn btn-block" onClick={copyButton}>Copy to Clipboard</button>:null}
+      {shortenedUrl ? <button className="btn btn-block" onClick={async () => { 
+        // await fetch("http://localhost:8080/qr/",{ // Testing
+          await fetch("https://srtlink.net//qr/",{ // Prod
+          method:"POST",
+          headers:{
+            'Content-Type':"application/json",
+          },
+          body: JSON.stringify({url:shortenedUrl})
+        })
+        .then(res => res.blob())
+        .then(blob => URL.createObjectURL(blob))
+        .then(url => {
+          const a = document.createElement('a');
+          a.href = url
+          a.download = 'qr-code.png'
+          a.click()
+        })
+      }}>
+      Download QR Code
+      </button>:null}
     </div>
   );
 }

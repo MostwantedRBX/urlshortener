@@ -8,21 +8,23 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/skip2/go-qrcode"
 	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/mostwantedrbx/urlshortener/storage"
 )
 
 //	Docker info {
-//	Download the postgres image for the database and run it with: 'docker run -e POSTGRES_PASSWORD=dbpasswordhere postgres:latest'
-//	Build command: 'docker build --tag urlshortener:latest .'
-//	Run command: 'docker run -e PG_PASS=dbpasswordhere -e PG_HOST=dbIPhere -e PG_PORT=5432 -e PG_DATABASE_NAME=dbnamehere --name nameofcontainer -p 8080:8080 -d urlshortener:latest'
+//		Download the postgres image for the database and run it with: 'docker run -e POSTGRES_PASSWORD=dbpasswordhere postgres:latest'
+//		Build command: 'docker build --tag urlshortener:latest .'
+//		Run command: 'docker run -e PG_PASS=dbpasswordhere -e PG_HOST=dbIPhere -e PG_PORT=5432 -e PG_DATABASE_NAME=dbnamehere --name nameofcontainer -p 8080:8080 -d urlshortener:latest'
 //	}
 
 var (
@@ -31,6 +33,7 @@ var (
 	ALPHANUM string  = "aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789"
 	DB       *sql.DB = storage.StartDB()
 	PROD     bool    = os.Getenv("PROD") == "true"
+	HOSTURL  string  = "https://srtlink.net/"
 )
 
 type UrlStruct struct {
@@ -92,14 +95,49 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	jsonData.Url = "srtlink.net/" + key
-
+	jsonData.Url = HOSTURL + key
 	if err := json.NewEncoder(w).Encode(&jsonData); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}
 
 	// log.Logger.Info().Msg("Url: " + req.URL.RawQuery + "\n	   Key: " + key)
+}
+
+//	Generates and returns a qrcode as a byte array.
+func generateQRByteArr(key string) ([]byte, error) {
+
+	qrByteArr, err := qrcode.Encode(HOSTURL+key, qrcode.Low, 256)
+
+	if err != nil {
+		return make([]byte, 0), err
+	}
+	return qrByteArr, nil
+}
+
+//	Fires on GET request to '/qr/'
+//	Takes a URL and encodes it into a qrcode byte array.
+//	Responds with the qr byte array as a download file.
+func serveQr(w http.ResponseWriter, req *http.Request) {
+	var jsonData UrlStruct
+	err := json.NewDecoder(req.Body).Decode(&jsonData)
+	if err != nil {
+		log.Logger.Err(err).Msg("Could not decode json")
+		return
+	}
+
+	key := jsonData.Url[len(HOSTURL)-1 : len(jsonData.Url)-1]
+	data, err := generateQRByteArr(jsonData.Url)
+	if err != nil {
+		http.Error(w, "File not found.", 404)
+		log.Logger.Err(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "image/png;"+key+".png")
+	w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+
+	w.Write(data)
 }
 
 //	Function to generate the key for the link
@@ -152,7 +190,7 @@ func main() {
 	r.Handle("/", fs)
 	r.HandleFunc("/put/", putUrl).Methods("POST")   //, "OPTIONS"	when either /links or /links{key} gets requested, hand the data to a function
 	r.HandleFunc("/{key}", fetchUrl).Methods("GET") //	{key} is a variable that gets handed to the function fetchUrl()
-
+	r.HandleFunc("/qr/", serveQr).Methods("POST")
 	r.PathPrefix("/").Handler(fs)
 
 	//	Server settings
