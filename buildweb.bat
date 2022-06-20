@@ -36,7 +36,7 @@ CALL npm run build
 ECHO "Done Building - Renaming folder"
 RENAME build web
 CD "..\src\"
-DEL ".\web"
+DEL /-Y ".\web"
 CD "..\web-src\"
 MOVE ".\web" "..\src\"
 CD ".."
