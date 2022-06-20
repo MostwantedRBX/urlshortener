@@ -107,7 +107,7 @@ func putUrl(w http.ResponseWriter, req *http.Request) {
 //	Generates and returns a qrcode as a byte array.
 func generateQRByteArr(key string) ([]byte, error) {
 
-	qrByteArr, err := qrcode.Encode(HOSTURL+key, qrcode.Low, 256)
+	qrByteArr, err := qrcode.Encode(HOSTURL+key, qrcode.Medium, 256)
 
 	if err != nil {
 		return make([]byte, 0), err
@@ -126,8 +126,8 @@ func serveQr(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	key := jsonData.Url[len(HOSTURL)-1 : len(jsonData.Url)-1]
-	data, err := generateQRByteArr(jsonData.Url)
+	key := jsonData.Url[len(jsonData.Url)-6:] // /ABCDE/
+	data, err := generateQRByteArr(key)
 	if err != nil {
 		http.Error(w, "File not found.", 404)
 		log.Logger.Err(err)
